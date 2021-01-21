@@ -31,7 +31,7 @@ guzelSoz1.save();
 guzelSoz2.save();
 guzelSoz3.save();
 */
-
+/*
 //  TÜM GÜZEL SÖZLERİ JSON FORMATINDA RETURN EDELİM..
 app.get("/api/guzelsozler", function(req, res){
   GuzelSoz.find({} , function(err, gelenVeriler){
@@ -89,8 +89,7 @@ app.patch("/api/guzelsozguncelleme/:id", function(req, res){
           res.send(err);
     });
 });
-
-const guzelSoz = mongoose.model("GuzelSoz", guzelSozSema);
+*/
 // id si belirli olan guzel sozu gorecek
 // anasayfa icin
 app.get("/", function(req, res){
@@ -161,10 +160,10 @@ app.route("/api/guzelsozler")
       });
     });
 
-    let port = process.env.PORT;
-    if(port == "" || port == null){
-      port = 5000;
-    }
-    app.listen(port, function(){
-      console.log("port numarasi : " + port);
-    });
+let port = process.env.PORT;
+if(port == "" || port == null){
+  port = 5000;
+}
+app.listen(port, function(){
+  console.log("port numarasi : " + port);
+});
