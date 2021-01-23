@@ -1,5 +1,6 @@
 const express    = require("express");
 const bodyParser = require("body-parser");
+const https      = require("https");
 const app        = express();
 const mongoose   = require("mongoose");
 app.set("view engine", "ejs");
@@ -108,7 +109,7 @@ app.route("/api/guzelsoz/:id")
       var icerikGelen   = req.body.icerik;
       GuzelSoz.update({_id : req.params.id} , {kategori : kategoriGelen, icerik : icerikGelen}, {overwrite: true}, function(err){
         if(!err)
-          res.send("Kayıt başarıyla güncellendi.");
+          res.send({sonuc : "Kayıt başarıyla güncellendi."});
         else
           res.send(err);
       });
@@ -116,20 +117,24 @@ app.route("/api/guzelsoz/:id")
     .patch(function(req, res){
       GuzelSoz.update({_id : req.params.id} , {$set : req.body}, function(err){
         if(!err)
-          res.send("Kayıt başarıyla güncellendi.");
+          res.send({sonuc : "Kayıt başarıyla güncellendi."});
         else
           res.send(err);
       })
     })
     .delete(function(req, res){
-      GuzelSoz.deleteOne({_id : req.params.id}, function(err){
-        if(!err)
-          res.send("Kayıt başarıyla silindi.");
-        else
-          res.send(err);
-      })
+      var sifre = req.body.sifre;
+      if(sifre == "parola1234"){
+        GuzelSoz.deleteOne({_id : req.params.id}, function(err){
+          if(!err)
+            res.send({sonuc : "Kayıt başarıyla silindi."});
+          else
+            res.send(err);
+        })
+      }else{
+        res.send({sonuc : "Şifre hatalı."});
+      }
     });
-//id si belli olmayan baglantilara bakalim. bu durumda get ve post kullanilabilir
 app.route("/api/guzelsozler")
     .get(function(req, res){
       GuzelSoz.find({}, function(err, gelenVeri){
@@ -146,19 +151,48 @@ app.route("/api/guzelsozler")
        });
        guzelSoz.save(function(err){
           if(!err)
-            res.send("Kayıt başarıyla oluşturuldu.");
+            res.send( {sonuc : "Kayıt başarıyla oluşturuldu."} );
           else
             res.send(err);
        });
     })
     .delete(function(req, res){
-      GuzelSoz.deleteMany({}, function(err){
-        if(!err)
-          res.send("Tüm kayıtlar başarıyla silindi.");
-        else
-          res.send(err);
-      });
+      var sifre = req.body.sifre;
+      if(sifre == "parola1234"){
+        GuzelSoz.deleteMany({}, function(err){
+          if(!err)
+            res.send( {sonuc : "Tüm kayıtlar başarıyla silindi."} );
+          else
+            res.send(err);
+        });
+      }else{
+        res.send({sonuc : "Şifre hatalı."});
+      }
     });
+
+app.get("/admin", function(req, res){
+  // Burada Guzel soz  .. sil
+  // 1. Alternatif guzel sozleri almak icin
+  /*GuzelSoz.find({}, function(err, gelenGuzelSozler){
+  res.render("admin", {guzelsozler : gelenGuzelSozler});
+})*/
+  // 2. Alternatif
+  var link = "https://guzelsozler.herokuapp.com/api/guzelsozler-rb";
+      https.get(link , function(response){
+        response.on("data", function(gelenGuzelSozler){
+          // gelenGuzelSozler -> byte türünde gelmişti.
+          var guzelSozler = JSON.parse(gelenGuzelSozler);
+          res.send(guzelSozler);
+        })
+      });
+  });
+app.post("/kayit-sil", function(req, res){
+  var id =req.body._id;
+  var link = "https://guzelsozler.herokuapp.com/api/guzelsozler-rb/"+id;
+
+  https.get(link, secenekler, function(response))
+  res.send(id);
+});
 
 let port = process.env.PORT;
 if(port == "" || port == null){
