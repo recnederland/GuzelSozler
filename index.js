@@ -169,34 +169,46 @@ app.route("/api/guzelsozler")
         res.send({sonuc : "Şifre hatalı."});
       }
     });
-
 app.get("/admin", function(req, res){
-  // Burada Guzel soz  .. sil
-  // 1. Alternatif guzel sozleri almak icin
-  /*GuzelSoz.find({}, function(err, gelenGuzelSozler){
-  res.render("admin", {guzelsozler : gelenGuzelSozler});
-})*/
-  // 2. Alternatif
-  var link = "https://guzelsozler.herokuapp.com/api/guzelsozler-rb";
-      https.get(link , function(response){
-        response.on("data", function(gelenGuzelSozler){
-          // gelenGuzelSozler -> byte türünde gelmişti.
-          var guzelSozler = JSON.parse(gelenGuzelSozler);
-          res.send(guzelSozler);
-        })
+    // 1. Alternatif
+    /*GuzelSoz.find({}, function(err, gelenGuzelSozler){
+      res.render("admin", {guzelsozler : gelenGuzelSozler});
+    })*/
+    var link = "https://guzelsozler.herokuapp.com/api/guzelsozler";
+    https.get(link , function(response){
+      response.on("data", function(gelenGuzelSozler){
+        // gelenGuzelSozler -> byte türünde gelmişti.
+        var guzelSozler = JSON.parse(gelenGuzelSozler);
+        res.render("admin", { sozler : guzelSozler } );
+      })
+    });
+});
+//https://guzelsozler.herokuapp.com/api/guzelsoz/600c683c986f50001534a062
+app.post("/kayit-sil", function(req, res){
+    var id = req.body._id;
+    var link = "https://guzelsozler.herokuapp.com/api/guzelsoz/"+id;
+    const gonderilecekler = JSON.stringify({
+         sifre : "1234"
+    });
+    var secenekler = {
+      method : 'DELETE',
+      headers: {
+        'Content-Type' : 'application/json',
+        'Content-Length' : gonderilecekler.length
+      }
+    };
+    const request = https.request(link, secenekler, function(response){
+      response.on("data", function(gelenData){
+        var sonuc = JSON.parse(gelenData);
+        res.send(sonuc)
       });
   });
-app.post("/kayit-sil", function(req, res){
-  var id =req.body._id;
-  var link = "https://guzelsozler.herokuapp.com/api/guzelsozler-rb/"+id;
-
-  https.get(link, secenekler, function(response))
-  res.send(id);
+    request.write(gonderilecekler);
+    request.end();
 });
-
 let port = process.env.PORT;
 if(port == "" || port == null){
-  port = 5000;
+  port = 7500;
 }
 app.listen(port, function(){
   console.log("port numarasi : " + port);
